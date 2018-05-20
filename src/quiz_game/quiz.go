@@ -5,8 +5,7 @@ import "fmt"
 func main() {
 	clArgs := parseCommandLineArgs()
 	problems := loadProblemsFromFile(clArgs.Filename)
+	score := executeQuiz(problems)
 
-	for _, p := range problems {
-		fmt.Println(fmt.Sprintf("%s -> %s", p.Question, p.Answer))
-	}
+	fmt.Println(fmt.Sprintf("You got %d out of %d correct", score.Correct, score.Total))
 }
