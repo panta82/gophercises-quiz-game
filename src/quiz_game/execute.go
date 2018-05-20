@@ -5,20 +5,59 @@ import (
 	"os"
 	"fmt"
 	"strings"
+	"time"
 )
 
 type Score struct {
 	Total int
 	Correct int
+	Timeout bool
 }
 
-func executeQuiz(problems []Problem) Score {
+func executeQuiz(problems []Problem, timeLimit int) Score {
+	if timeLimit == 0 {
+		// No timer, can just ask questions normally
+		return doExecuteQuiz(problems, nil)
+	}
+
+	fmt.Printf("You have %d seconds to answer %d questions. Press ENTER when ready! > ", timeLimit, len(problems))
+	_, err := bufio.NewReader(os.Stdin).ReadBytes('\n');
+	if err != nil {
+		fatal("Failed to read from stdin", err)
+	}
+
+	timer := time.NewTimer(time.Duration(timeLimit) * time.Second)
+
+	scoreChan := make(chan Score)
+	score := Score {}
+
+	go doExecuteQuiz(problems, &scoreChan)
+
+	loop:
+	for {
+		select {
+		case <- timer.C:
+			score.Timeout = true
+			break loop
+		case score = <- scoreChan:
+			if score.Total == len(problems) {
+				timer.Stop()
+				break loop
+			}
+		}
+	}
+
+	return score
+}
+
+func doExecuteQuiz(problems []Problem, scoreChan *chan Score) Score {
+	score := Score {}
+
 	reader := bufio.NewReader(os.Stdin)
-	score := Score{0, 0}
 	i := 0
 
 	for {
-		if i >= len(problems) - 1 {
+		if i >= len(problems) {
 			break
 		}
 
@@ -38,6 +77,10 @@ func executeQuiz(problems []Problem) Score {
 		}
 
 		i++
+
+		if scoreChan != nil {
+			*scoreChan <- score
+		}
 	}
 
 	return score
