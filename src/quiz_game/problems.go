@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"encoding/csv"
 	"io"
+	"math/rand"
 )
 
 type Problem struct {
@@ -24,7 +25,7 @@ func getDefaultProblemsPath() string {
 	return filepath.Join(dir, DefaultProblemsFilename)
 }
 
-func loadProblemsFromFile(path string) []Problem {
+func loadProblemsFromFile(path string, shuffle bool) []Problem {
 	file, err := os.Open(path)
 	if err != nil {
 		fatal(fmt.Sprintf("Failed to open %s", path), err)
@@ -42,6 +43,12 @@ func loadProblemsFromFile(path string) []Problem {
 		}
 
 		result = append(result, Problem{row[0], row[1]})
+	}
+
+	if shuffle {
+		rand.Shuffle(len(result), func(i, j int) {
+			result[i], result[j] = result[j], result[i]
+		})
 	}
 
 	return result

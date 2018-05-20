@@ -8,6 +8,7 @@ import (
 type CommandLineArgs struct {
 	Filename string
 	Limit int
+	Shuffle bool
 }
 
 func parseCommandLineArgs() CommandLineArgs {
@@ -19,10 +20,11 @@ func parseCommandLineArgs() CommandLineArgs {
 
 	filename := flag.String("filename", "", "Filename of an alternative problems file (otherwise, uses the default)")
 	limit := flag.Int("limit", 30, "Quiz time limit. Set 0 to disable")
+	shuffle := flag.Bool("shuffle", false, "Shuffle problems before quiz")
 
 	flag.Parse()
 
-	result := CommandLineArgs{Filename: *filename, Limit: *limit}
+	result := CommandLineArgs{Filename: *filename, Limit: *limit, Shuffle: *shuffle}
 
 	if result.Filename == "" {
 		result.Filename = getDefaultProblemsPath()
